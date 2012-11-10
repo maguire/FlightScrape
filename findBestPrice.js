@@ -21,6 +21,7 @@ var to = 'ROC'
 var beginDate = '2012-11-09'
 var endDate = '2013-01-09'
 
+var flightPersistence = require('./flightPersistence');
 var http = require('http');
 var d = []
 d[0] = ''
@@ -56,8 +57,8 @@ callback = function(response) {
   //the whole response has been recieved, so we just print it out here
   response.on('end', function () {
     flightObj = FlightResponseParser.parse(str);
-    a = FlightResponseParser.getDailyBestPrices(flightObj)
-    console.log(a)
+    var dailyBestPrices = FlightResponseParser.getDailyBestPrices(flightObj)
+    flightPersistence.persistBestPrices(dailyBestPrices);
   });
 }
 
