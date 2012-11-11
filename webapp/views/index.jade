@@ -1,0 +1,31 @@
+extends layout
+
+block content
+  h4= 'Latest'
+  p= 'The SEA prices for the next 60 days as of the last price request run'
+  div#latest(style='width:600px;height:300px;')
+
+  script
+    var toGraphData = function(data, label) {
+      var out = [];
+      for(var i = 0; i < data.length; i++) {
+        out.push([new Date(data[i].flight_date), data[i].price/100])
+      } 
+      return [{ label : label, data : out}];
+    };
+
+    var options = {
+        series: {
+            lines: { show: true },
+            points: { show: true }
+        },
+        xaxes: [ { mode: 'time' }] 
+    }
+    // ugly
+    $.get('/latest/1', function(data) {
+      data = toGraphData(data, "SEA->ROC") 
+      $.get('/latest/2', function(bData) {
+        $.plot($('#latest'), toGraphData(bData, "SEA->BOS").concat(data), options);
+      }, 'json')},'json') ;
+
+

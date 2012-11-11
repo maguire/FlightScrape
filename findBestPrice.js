@@ -16,10 +16,10 @@ var FlightResponseParser = {
     }
 }
 
-var from = 'SEA'
-var to = 'ROC'
-var beginDate = '2012-11-09'
-var endDate = '2013-01-09'
+var from = '{FROM}'
+var to = '{TO}'
+var beginDate = new Date().toISOString().split('T')[0] //'2012-11-10'
+var endDate = new Date(+new Date() + 60*86400000).toISOString().split('T')[0]
 
 var flightPersistence = require('./flightPersistence');
 var http = require('http');
@@ -41,28 +41,37 @@ var options = {
   path: '/flights/rpc',
   method: 'POST',
   headers: {'Content-Type': 'application/x-www-form-urlencoded',
-            'Content-Length': reqData.length,
             'Accept' : '*/*',
             'X-GWT-Permutation':'AA0BE2EDE18DC4F0C784922828B2BA9F'} 
 };
 
-callback = function(response) {
+var getFlightsCallback = function(flights) {
+  var curFlightIdx = 0;
+  var create_callback = function(i) {
+    return function(response) {
+      var str = '';
+      //another chunk of data has been recieved, so append it to `str`
+      response.on('data', function (chunk) {
+        str += chunk;
+      });
 
-  var str = '';
-  //another chunk of data has been recieved, so append it to `str`
-  response.on('data', function (chunk) {
-    str += chunk;
-  });
+      //the whole response has been recieved, so we just print it out here
+      response.on('end', function () {
+        var flightObj = FlightResponseParser.parse(str);
+        var dailyBestPrices = FlightResponseParser.getDailyBestPrices(flightObj)
+        flightPersistence.persistBestPrices(dailyBestPrices, flights[i]);
+      });
+    }
+  }
+  
+  for(curFlightIdx = 0; curFlightIdx < flights.length; curFlightIdx++) {
+    var requestData = reqData.replace('{FROM}', flights[curFlightIdx].from_airport)
+                             .replace('{TO}', flights[curFlightIdx].to_airport);
+    options['headers']['Content-Length'] = requestData.length;
+    var request = http.request(options, create_callback(curFlightIdx));
+    request.end(requestData);
+  }
+};
 
-  //the whole response has been recieved, so we just print it out here
-  response.on('end', function () {
-    flightObj = FlightResponseParser.parse(str);
-    var dailyBestPrices = FlightResponseParser.getDailyBestPrices(flightObj)
-    flightPersistence.persistBestPrices(dailyBestPrices);
-  });
-}
-
-var request = http.request(options, callback);
-request.end(reqData);
-
+flightPersistence.getAllFlights(getFlightsCallback);
 

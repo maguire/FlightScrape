@@ -1,0 +1,9 @@
+{
+  "name": "FlightScrape",
+  "description": "flight scrape app",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "sqlite-fts": "0.0.9"
+  }
+}
