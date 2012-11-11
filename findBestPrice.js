@@ -46,8 +46,7 @@ var options = {
 };
 
 var getFlightsCallback = function(flights) {
-  var curFlightIdx = 0;
-  var create_callback = function(i) {
+  var createCallback = function(i) {
     return function(response) {
       var str = '';
       //another chunk of data has been recieved, so append it to `str`
@@ -64,11 +63,11 @@ var getFlightsCallback = function(flights) {
     }
   }
   
-  for(curFlightIdx = 0; curFlightIdx < flights.length; curFlightIdx++) {
+  for(var curFlightIdx = 0; curFlightIdx < flights.length; curFlightIdx++) {
     var requestData = reqData.replace('{FROM}', flights[curFlightIdx].from_airport)
                              .replace('{TO}', flights[curFlightIdx].to_airport);
     options['headers']['Content-Length'] = requestData.length;
-    var request = http.request(options, create_callback(curFlightIdx));
+    var request = http.request(options, createCallback(curFlightIdx));
     request.end(requestData);
   }
 };
