@@ -48,15 +48,13 @@ var options = {
 var getFlightsCallback = function(flights) {
   var createCallback = function(i) {
     return function(response) {
-      var str = '';
-      //another chunk of data has been recieved, so append it to `str`
+      var responseBody = '';
       response.on('data', function (chunk) {
-        str += chunk;
+        responseBody += chunk;
       });
 
-      //the whole response has been recieved, so we just print it out here
       response.on('end', function () {
-        var flightObj = FlightResponseParser.parse(str);
+        var flightObj = FlightResponseParser.parse(responseBody);
         var dailyBestPrices = FlightResponseParser.getDailyBestPrices(flightObj)
         flightPersistence.persistBestPrices(dailyBestPrices, flights[i]);
       });

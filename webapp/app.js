@@ -5,7 +5,7 @@
 
 var express = require('express')
   , routes = require('./routes')
-  , latest = require('./routes/latest')
+  , prices = require('./routes/prices')
   , http = require('http')
   , path = require('path');
 
@@ -29,7 +29,7 @@ app.configure('development', function(){
 });
 
 app.get('/', routes.index);
-app.get('/latest/:id', latest.list);
+app.get('/prices/:id', prices.show);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));

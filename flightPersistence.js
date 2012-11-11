@@ -36,6 +36,25 @@ exports.getAllFlights = function(callback) {
   });
 }
 
+exports.getBestPricesForDate = function(flightId, dateTime, callback) {
+  db.open("flights", function (error) {
+    if (error) {
+      console.log("Error opening flights.db");
+      throw error;
+    }
+    db.execute(
+      "SELECT day,price FROM FlightPrices " + 
+        "JOIN PriceRequests pr ON price_request_id = pr.id " + 
+        "JOIN Flight f ON pr.flight_id = f.id " +
+        "WHERE flight_date = ? AND f.id = ?"
+      , [dateTime, flightId]
+      , function(error, rows) {
+          if(error) throw error;
+          callback(rows);
+    });
+  });
+}
+
 exports.getLatestBestPrices = function(flightId, callback) {
   db.open("flights", function (error) {
     if (error) {

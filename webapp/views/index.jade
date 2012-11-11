@@ -2,11 +2,31 @@ extends layout
 
 block content
   h4= 'Latest'
-  p= 'The SEA prices for the next 60 days as of the last price request run'
+  p= 'What are the current prices for upcoming flights?'
   div#latest(style='width:600px;height:300px;')
+  
+  h4= 'Weekly Price Distribution'
+  p= 'How much do flight prices change based on the day of the week? (SEA->ROC)'
+  span= 'Flight Date: '
+  select#weeklyFlightDate
+  div#weekly(style='width:600px;height:300px;')
 
   script
-    var toGraphData = function(data, label) {
+    var toDateStr = function(d) {
+      return new Date(+new Date() + d*86400000).toISOString().split('T')[0]
+    };
+    $('#weeklyFlightDate').change(function() {
+      graphWeekly($('#weeklyFlightDate option:selected').val())
+    })
+    for(var i = 0; i < 60; i++) {
+      var opt = document.createElement('option');
+      opt.setAttribute('value', toDateStr(i));
+      $(opt).text(toDateStr(i))
+      $('#weeklyFlightDate').append(opt);
+    }
+    
+  script
+    var toLatestGraphData = function(data, label) {
       var out = [];
       for(var i = 0; i < data.length; i++) {
         out.push([new Date(data[i].flight_date), data[i].price/100])
@@ -22,10 +42,50 @@ block content
         xaxes: [ { mode: 'time' }] 
     }
     // ugly
-    $.get('/latest/1', function(data) {
-      data = toGraphData(data, "SEA->ROC") 
-      $.get('/latest/2', function(bData) {
-        $.plot($('#latest'), toGraphData(bData, "SEA->BOS").concat(data), options);
+    $.get('/prices/1', function(data) {
+      data = toLatestGraphData(data, "SEA->ROC") 
+      $.get('/prices/2', function(bData) {
+        $.plot($('#latest'), toLatestGraphData(bData, "SEA->BOS").concat(data), options);
       }, 'json')},'json') ;
 
-
+    var toWeeklyGraph = function(data) {
+      var byDay = [];
+      for(var i = 0; i < data.length; i++) {
+        if(!byDay[data[i].day])
+          byDay[data[i].day] = []
+        byDay[data[i].day].push(data[i].price/100); 
+      }
+      var out = []
+      for (var i in byDay) {
+        var sum = 0;
+        for (var j in byDay[i]) {
+          sum += byDay[i][j]; 
+        }
+        out.push([i, sum/byDay[i].length])
+      }
+      return [{ data : out }]
+    }
+    var weeklyOptions = {
+        series: {
+            bars: {align: 'center', show: true},
+            points: { show: true }
+        },
+        xaxis: { 
+            ticks : [ [0, 'Sunday'], 
+                      [1, 'Monday'], 
+                      [2,'Tuesday'], 
+                      [3, 'Wednesday'], 
+                      [4, 'Thursday'], 
+                      [5, 'Friday'], 
+                      [6, 'Saturday']] ,
+            min : -1,
+            max : 7
+        }
+    }
+    var graphWeekly = function(dateTime) {
+      $.get('/prices/1?dateTime=' + dateTime, function(data) {
+        $.plot($('#weekly'), toWeeklyGraph(data), weeklyOptions); 
+      }, 'json');
+    };
+    graphWeekly(toDateStr(50)) 
+    $('#weeklyFlightDate').val(toDateStr(50));
