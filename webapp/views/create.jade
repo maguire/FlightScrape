@@ -1,0 +1,15 @@
+extends layout
+
+block content
+ h4= 'Create'
+ p
+  span= from
+  span= ' -> '
+  span= to
+  span= ' does not exist. '
+  a#create(href="#")= 'Create' 
+ 
+ script
+  $('#create').click(function() {
+    $.post('/create', {'from': '#{from}', 'to': '#{to}' }, function() {} );
+  }); 

@@ -6,12 +6,16 @@ block content
   div#latest(style='width:600px;height:300px;')
   
   h4= 'Weekly Price Distribution'
-  p= 'How much do flight prices change based on the day of the week? (SEA->ROC)'
+  p= 'How much do flight prices change based on the day of the week? '
+    span= from 
+    span= '->'
+    span= to 
   span= 'Flight Date: '
   select#weeklyFlightDate
   div#weekly(style='width:600px;height:300px;')
-
+  
   script
+    var flightId = #{flightId}
     var toDateStr = function(d) {
       return new Date(+new Date() + d*86400000).toISOString().split('T')[0]
     };
@@ -42,10 +46,10 @@ block content
         xaxes: [ { mode: 'time' }] 
     }
     // ugly
-    $.get('/prices/1', function(data) {
-      data = toLatestGraphData(data, "SEA->ROC") 
-      $.get('/prices/2', function(bData) {
-        $.plot($('#latest'), toLatestGraphData(bData, "SEA->BOS").concat(data), options);
+    $.get('/prices/' + flightId, function(data) {
+      data = toLatestGraphData(data, "#{from}->#{to}") 
+      $.get('/prices/3', function(bData) {
+        $.plot($('#latest'), toLatestGraphData(bData, "SEA->BUF").concat(data), options);
       }, 'json')},'json') ;
 
     var toWeeklyGraph = function(data) {
@@ -83,7 +87,7 @@ block content
         }
     }
     var graphWeekly = function(dateTime) {
-      $.get('/prices/1?dateTime=' + dateTime, function(data) {
+      $.get('/prices/' + flightId + '?dateTime=' + dateTime, function(data) {
         $.plot($('#weekly'), toWeeklyGraph(data), weeklyOptions); 
       }, 'json');
     };

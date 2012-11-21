@@ -6,6 +6,7 @@
 var express = require('express')
   , routes = require('./routes')
   , prices = require('./routes/prices')
+  , flights = require('./routes/flights')
   , http = require('http')
   , path = require('path');
 
@@ -29,6 +30,8 @@ app.configure('development', function(){
 });
 
 app.get('/', routes.index);
+app.get('/f/:from/:to', routes.index);
+app.post('/create', flights.create);
 app.get('/prices/:id', prices.show);
 
 http.createServer(app).listen(app.get('port'), function(){

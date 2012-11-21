@@ -22,6 +22,20 @@ exports.persistBestPrices = function(datePricePairs, flight) {
   });
 };
 
+exports.createFlight = function(from, to) {
+  db.open("flights", function (error) {
+    if (error) {
+      console.log("Error opening flights.db");
+      throw error;
+    }
+    db.execute("INSERT into Flight(from_airport, to_airport)VALUES (?, ?)" 
+      , [from, to]
+      , function(error, row) {
+          if(error) throw error;
+      });
+  });
+}
+
 exports.getAllFlights = function(callback) {
   db.open("flights", function (error) {
     if (error) {
@@ -32,6 +46,25 @@ exports.getAllFlights = function(callback) {
       , function(error, rows) {
           if(error) throw error;
           callback(rows);
+      });
+  });
+}
+
+exports.getFlightId = function(from, to, callback) {
+  db.open("flights", function (error) {
+    if (error) {
+      console.log("Error opening flights.db");
+      throw error;
+    }
+    db.execute("SELECT * FROM Flight WHERE from_airport = ? AND to_airport = ? LIMIT 1"
+      , [from, to] 
+      , function(error, rows) {
+        console.log("ROWS", rows);
+          if(error) throw error;
+          if (rows.length == 1)
+            callback(rows[0]['id']);
+          else
+            callback('');
       });
   });
 }
@@ -79,7 +112,10 @@ var getLatestPriceRequestId = function(flightId, callback) {
     , [flightId]
     , function(error, rows) {
         if(error) throw error;
-        var id =rows[0]['id'];
+        var id = "";
+        if (rows && rows.length==1) {
+          var id =rows[0]['id'];
+        }
         callback(id); 
     })
 };
