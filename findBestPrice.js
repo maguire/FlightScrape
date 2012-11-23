@@ -19,7 +19,7 @@ var FlightResponseParser = {
 var from = '{FROM}'
 var to = '{TO}'
 var beginDate = new Date().toISOString().split('T')[0] //'2012-11-10'
-var endDate = new Date(+new Date() + 60*86400000).toISOString().split('T')[0]
+var endDate = new Date(+new Date() + 90*86400000).toISOString().split('T')[0]
 
 var flightPersistence = require('./flightPersistence');
 var http = require('http');

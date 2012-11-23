@@ -22,7 +22,7 @@ block content
     $('#weeklyFlightDate').change(function() {
       graphWeekly($('#weeklyFlightDate option:selected').val())
     })
-    for(var i = 0; i < 60; i++) {
+    for(var i = 0; i < 99; i++) {
       var opt = document.createElement('option');
       opt.setAttribute('value', toDateStr(i));
       $(opt).text(toDateStr(i))
@@ -91,5 +91,5 @@ block content
         $.plot($('#weekly'), toWeeklyGraph(data), weeklyOptions); 
       }, 'json');
     };
-    graphWeekly(toDateStr(50)) 
-    $('#weeklyFlightDate').val(toDateStr(50));
+    graphWeekly(toDateStr(99)) 
+    $('#weeklyFlightDate').val(toDateStr(99));
